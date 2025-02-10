@@ -210,6 +210,11 @@ const VERSION_MANIFEST_URL = "https://versions.plutonia.download/manifest.json";
 async function getVersionList(options = {}) {
   const response = await axios.get(VERSION_MANIFEST_URL, {
     ...options,
+    headers: {
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+      Expires: "0",
+    },
   });
 
   if (response.status !== 200) {
