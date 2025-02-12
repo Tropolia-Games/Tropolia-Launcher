@@ -168,7 +168,7 @@ function reorganizeExtractedFiles(folderPath) {
 function getExecutablePath(runtimePath, platform) {
   const javaPaths = {
     mac: path.join(runtimePath, "Contents", "Home", "bin", "java"),
-    windows: path.join(runtimePath, "bin", "javaw.exe"),
+    windows: path.join(runtimePath, "bin", "java.exe"),
   };
 
   return javaPaths[platform] || path.join(runtimePath, "bin", "java");
