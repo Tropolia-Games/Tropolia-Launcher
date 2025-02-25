@@ -81,3 +81,22 @@ jobs:
           asset_path: dist/Plutonia-win-x64-signed.exe
           asset_name: Plutonia-win-x64-signed.exe
           asset_content_type: application/octet-stream
+
+      - name: Install jq (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install jq -y
+          refreshenv
+
+      - name: Get upload URL from VirusTotal (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          BIGFILE_URL=$(curl --request GET --url "https://www.virustotal.com/api/v3/files/upload_url" --header "accept: application/json" --header "x-apikey: ${{ secrets.VIRUSTOTAL_KEY }}" | jq -r '.data')
+          echo "BIGFILE_URL=$BIGFILE_URL" >> $GITHUB_ENV
+
+      - name: Upload file to VirusTotal (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          curl --request POST --url "$BIGFILE_URL" --header "accept: application/json" --header "content-type: multipart/form-data" --header "x-apikey: ${{ secrets.VIRUSTOTAL_KEY }}" --form file="@dist/Plutonia-win-x64-signed.exe"
