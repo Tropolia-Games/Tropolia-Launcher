@@ -408,12 +408,12 @@ async function launchGame(args, options) {
     extraExecOption: {
       detached: true,
     },
-    extraJVMArgs: [
-      "-Xms128M",
-      `-Xmx${options && options.ram ? options.ram : "2048M"}`,
-      "-Dfml.ignoreInvalidMinecraftCertificates=true",
-      "-Dfml.ignorePatchDiscrepancies=true",
-    ],
+    ignoreInvalidMinecraftCertificates: true,
+    ignorePatchDiscrepancies: true,
+    minMemory: 128,
+    maxMemory: (parseInt(options?.ram, 10) || 2) * 1024,
+    // Change it later to minMemory & maxMemory.
+    // extraJVMArgs: ["-Xms128M", `-Xmx${options?.ram ?? "2048M"}`],
     extraMCArgs: [
       options &&
       options.modules &&
