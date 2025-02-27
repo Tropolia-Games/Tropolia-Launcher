@@ -1,6 +1,6 @@
 "use strict";
 
-const url = "https://api.plutonia-mc.fr/auth";
+const url = "https://api.plutonia-mc.fr/auth/authenticate";
 
 class AuthWorker {
   async auth(username, password) {
@@ -27,7 +27,6 @@ class AuthWorker {
     });
 
     const jsonResponse = await response.json();
-
     const status = jsonResponse.status;
 
     if (status === "200") {
