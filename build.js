@@ -1,4 +1,4 @@
-const fs = require("fs-extra");
+const fs = require("fs");
 const builder = require("electron-builder");
 
 const JavaScriptObfuscator = require("javascript-obfuscator");
@@ -86,7 +86,14 @@ class Index {
           copyright: "Copyright © 2014-2025 Plutonia",
           artifactName: "${productName}-${os}-${arch}.${ext}",
           extraMetadata: { main: "app/app.js" },
-          files: ["app/**/*", "package.json", "LICENSE.md"],
+          files: [
+            "app/**/*",
+            "package.json",
+            "LICENSE.md",
+            "!**/*.cmd",
+            "!**/*.bat",
+            "!**/*.ps1",
+          ],
           directories: { output: "dist" },
           compression: "maximum",
           asar: true,
