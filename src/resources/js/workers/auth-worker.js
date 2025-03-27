@@ -1,46 +1,41 @@
 "use strict";
 
-const url = "https://api.plutonia-mc.fr/auth/authenticate";
+const AUTH_API_URL = "https://api.plutonia-mc.fr/auth/authenticate";
 
-class AuthWorker {
-  async auth(username, password) {
-    return this.auth(username, password, "");
-  }
+class Authenticator {
+  async auth(username, password, tfaCode = "") {
+    if (!username || !password) {
+      throw new Error("Username and password are required.");
+    }
 
-  async auth(username, password, tfaCode) {
-    const encodedPassword = encodeURIComponent(password);
-    const postData =
-      "username=" +
-      username +
-      "&password=" +
-      encodedPassword +
-      (tfaCode ? "&tfa=" + tfaCode : "");
+    const params = new URLSearchParams();
 
-    const response = await fetch(url, {
+    params.append("username", username);
+    params.append("password", password);
+
+    if (tfaCode) {
+      params.append("tfa", tfaCode);
+    }
+
+    const response = await fetch(AUTH_API_URL, {
       method: "POST",
-
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-
-      body: postData,
+      body: params.toString(),
     });
 
     const jsonResponse = await response.json();
-    const status = jsonResponse.status;
 
-    if (status === "200") {
-      const session = jsonResponse.session;
-      const uuid = jsonResponse.uuid;
-
+    if (jsonResponse.status === "200") {
       return {
         name: username,
-        token: session,
-        uuid: uuid,
+        token: jsonResponse.session,
+        uuid: jsonResponse.uuid,
       };
     }
 
-    if (status === "400") {
+    if (jsonResponse.status === "400") {
       return { error: true, type: "tfa" };
     }
 
@@ -48,4 +43,4 @@ class AuthWorker {
   }
 }
 
-module.exports = AuthWorker;
+module.exports = { Authenticator };
