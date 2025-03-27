@@ -26,7 +26,7 @@ function createWindow() {
   optionsWindow = new BrowserWindow({
     title: "Options",
     width: 275,
-    height: 225,
+    height: 275,
     icon: "./src/resources/images/icons/icon." + iconExtension, // Never change this, its completly fucked up.
     show: false,
     resizable: false,
@@ -51,7 +51,7 @@ function createWindow() {
 
   optionsWindow.once("ready-to-show", () => {
     /* if (isDev) {
-      optionsWindow.webContents.openDevTools({ mode: 'detach' });
+      optionsWindow.webContents.openDevTools({ mode: "detach" });
     } */
   });
 }
