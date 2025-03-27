@@ -519,6 +519,7 @@ function setErrorMessage(text, error) {
     console.log(error);
   }
 
+  console.log(text);
   progressBarText.innerHTML = "<span style='color: red;'>" + text + "</span>";
 }
 /* Utils */
