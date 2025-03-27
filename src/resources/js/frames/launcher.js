@@ -5,31 +5,33 @@ const { setTimeout, clearTimeout } = require("timers");
 
 global.setTimeout = setTimeout;
 global.clearTimeout = clearTimeout;
-/* Fix undici */
 
-/* Imports */
-const { ipcRenderer } = require("electron");
-
+/* Core Modules */
 const path = require("path");
 const fs = require("fs");
 
-const AuthWorker = require("../resources/js/workers/auth-worker.js");
-const authWorker = new AuthWorker();
+/* Third-party Modules */
+const { ipcRenderer } = require("electron");
+const axios = require("axios");
+const { Agent } = require("undici");
+
+/* Internal Modules */
+const { Authenticator } = require("../resources/js/workers/auth-worker.js");
+const authenticator = new Authenticator();
 
 const {
   JavaDownloadTask,
   JavaExtractTask,
 } = require("../resources/js/workers/java-worker.js");
 
+/* Librairies Modules */
 const {
   installLibrariesTask,
   installAssetsTask,
   installVersionTask,
 } = require("@xmcl/installer");
-const { launch, Version } = require("@xmcl/core");
 
-const axios = require("axios");
-/* Imports */
+const { launch, Version } = require("@xmcl/core");
 
 /* HTML Fields */
 const closeButton = document.querySelector(".close");
@@ -44,7 +46,6 @@ const registerField = document.querySelector(".register");
 
 const progressBar = document.querySelector(".progress");
 const progressBarText = document.querySelector(".progress-text");
-/* HTML Fields */
 
 /* Registering listeners */
 window.addEventListener("load", async () => {
@@ -87,8 +88,6 @@ password.addEventListener("keydown", (event) => {
   }
 });
 
-const OPTIONS_FILE_NAME = "options.json";
-
 playButton.addEventListener("click", async (_) => {
   disableFields(true);
 
@@ -101,7 +100,7 @@ playButton.addEventListener("click", async (_) => {
 
   try {
     setMessage("Authentification en cours...");
-    authResult = await authWorker.auth(username.value, password.value);
+    authResult = await authenticator.auth(username.value, password.value);
 
     if (authResult.error) {
       setErrorMessage("Veuillez entrer votre code 2FA.");
@@ -117,7 +116,7 @@ playButton.addEventListener("click", async (_) => {
       }
 
       try {
-        authResult = await authWorker.auth(
+        authResult = await authenticator.auth(
           username.value,
           password.value,
           tfaResult.code
@@ -128,21 +127,10 @@ playButton.addEventListener("click", async (_) => {
       }
     }
 
-    setMessage("Authentification réussie.");
+    saveCredentials();
+    setMessage("Authentification réussie...");
   } catch (error) {
     setErrorMessage(error.message);
-    return disableFields(false);
-  }
-
-  saveCredentials();
-
-  let gamePath = undefined;
-
-  try {
-    gamePath = await ipcRenderer.invoke("appData");
-  } catch (error) {
-    console.error("Impossible de récupérer le chemin :", error);
-    setErrorMessage("Impossible de récupérer le chemin.");
     return disableFields(false);
   }
 
@@ -151,21 +139,18 @@ playButton.addEventListener("click", async (_) => {
   try {
     javaPath = await downloadJava(gamePath);
   } catch (error) {
-    console.log("Impossible de vérifier Java :", error);
-    setErrorMessage("Impossible de vérifier Java.");
+    setErrorMessage("Impossible de vérifier Java...", error);
     return disableFields(false);
   }
 
   let latestVersion = undefined;
-  const options = await ipcRenderer.invoke("get-from-file", OPTIONS_FILE_NAME);
 
   try {
-    const prerelease = options?.prerelease ?? false;
+    const preRelease = options?.prerelease ?? false;
 
-    latestVersion = await downloadJar(gamePath, prerelease);
+    latestVersion = await downloadJar(gamePath, preRelease);
   } catch (error) {
-    console.error("Impossible de récupérer la version :", error.message);
-    setErrorMessage("Impossible de récupérer la version...");
+    setErrorMessage("Impossible de récupérer la version...", error.message);
     return disableFields(false);
   }
 
@@ -174,20 +159,19 @@ playButton.addEventListener("click", async (_) => {
   try {
     await downloadLibrairies(resolvedVersion);
   } catch (error) {
-    console.error(
-      "Erreur lors du téléchargement des librairies :",
+    setErrorMessage(
+      "Une erreur s'est produite lors du téléchargement...",
       error.message
     );
-    setErrorMessage("Une erreur s'est produite lors du téléchargement...");
     return disableFields(false);
   }
 
   try {
     await downloadAssets(resolvedVersion);
   } catch (error) {
-    console.error("Erreur lors de l'installation des assets :", error.message);
     setErrorMessage(
-      "Une erreur s'est produite lors de l'installation des assets."
+      "Une erreur s'est produite lors de l'installation des assets.",
+      error.message
     );
     return disableFields(false);
   }
@@ -205,8 +189,57 @@ playButton.addEventListener("click", async (_) => {
 /* Registering listeners */
 
 /* Workers */
+async function downloadJava(gamePath) {
+  setMessage("Vérification de java...");
+  setProgress(0);
+
+  // Retrieve the JRE path. If not found, download it.
+  const installTask = await new JavaDownloadTask({
+    gamePath: gamePath,
+    java: { type: "jdk", version: 8 },
+  }).startAndWait({
+    onUpdate(task, chunkSize) {
+      if (chunkSize > 0) {
+        const percent = Math.round((task.progress / task.total) * 100);
+
+        setMessage(`Téléchargement de java en cours... (${percent}%)`);
+        setProgress(percent);
+      }
+    },
+  });
+
+  setMessage("Vérification de java terminé.");
+  setProgress(100);
+
+  // If it successfully finds the JRE, return the JRE path.
+  if (installTask.success) {
+    return installTask.path;
+  }
+
+  setMessage("Décompression de java en cours...");
+  setProgress(0);
+
+  // Extract the JRE zip file based on the download task's response.
+  const extractTask = await new JavaExtractTask({
+    source: installTask.source,
+    destination: installTask.destination,
+  }).startAndWait({
+    // The update progress will only be shown for zip files.
+    onUpdate(task, progress) {
+      setMessage(`Décompression de java en cours... (${progress}%)`);
+      setProgress(progress);
+    },
+  });
+
+  setMessage("Décompression de java terminée.");
+  setProgress(100);
+
+  return extractTask;
+}
+
 const VERSION_MANIFEST_URL = "https://versions.plutonia.download/manifest.json";
 
+// Deprecated; waiting for the updated lib
 async function getVersionList(options = {}) {
   const response = await axios.get(VERSION_MANIFEST_URL, {
     ...options,
@@ -219,91 +252,37 @@ async function getVersionList(options = {}) {
 
   if (response.status !== 200) {
     throw new Error(
-      `Failed to fetch Minecraft versions. HTTP status code: ${response.status}`
+      `Failed to fetch Plutonia versions. HTTP status code: ${response.status}`
     );
   }
 
   return response.data;
 }
 
-async function downloadJava(gamePath) {
-  console.log("Vérification de java...");
-  setMessage("Vérification de java...");
+async function getLatestVersion(prerelease) {
+  const versions = await getVersionList();
 
-  setProgress(0);
-
-  // Retrieve the JRE path. If not found, download it.
-  const installTask = await new JavaDownloadTask({
-    gamePath: gamePath,
-    java: { type: "jdk", version: 8 },
-  }).startAndWait({
-    onUpdate(task, chunkSize) {
-      if (chunkSize > 0) {
-        const percent = Math.round((task.progress / task.total) * 100);
-
-        console.log(`Téléchargement de java... (${percent}%)`);
-        setMessage(`Téléchargement de java en cours... (${percent}%)`);
-        setProgress(percent);
-      }
-    },
-  });
-
-  console.log("Vérification de java terminé.");
-  setMessage("Vérification de java terminé.");
-
-  setProgress(100);
-
-  // If it successfully finds the JRE, return the JRE path.
-  if (installTask.success) {
-    return installTask.path;
-  }
-
-  console.log("Décompression de java en cours...");
-  setMessage("Décompression de java en cours...");
-
-  setProgress(0);
-
-  // Extract the JRE zip file based on the download task's response.
-  const extractTask = await new JavaExtractTask({
-    source: installTask.source,
-    destination: installTask.destination,
-  }).startAndWait({
-    // The update progress will only be shown for zip files.
-    onUpdate(task, progress) {
-      console.log(`Décompression de java en cours... (${progress}%)`);
-      setMessage(`Décompression de java en cours... (${progress}%)`);
-
-      setProgress(progress);
-    },
-  });
-
-  console.log("Décompression de java terminée.");
-  setMessage("Décompression de java terminée.");
-
-  setProgress(100);
-
-  return extractTask;
-}
-
-async function downloadJar(gamePath, prerelease) {
-  const version = await getVersionList();
-
-  const latestVersion = version.versions.find((v) => {
+  const latestVersion = versions.versions.find((v) => {
     const targetId = prerelease
-      ? version.latest.prerelease
-      : version.latest.release;
+      ? versions.latest.prerelease
+      : versions.latest.release;
     return v.id === targetId;
   });
 
   if (!latestVersion) {
-    throw new Error("Impossible de récupérer la dernière version.");
+    throw new Error("Impossible de récupérer la dernière version...");
   }
 
-  const installTask = installVersionTask(latestVersion, gamePath, {});
+  return latestVersion;
+}
 
-  console.log("Vérification de la version...");
+async function downloadJar(gamePath, prerelease) {
+  const latestVersion = await getLatestVersion(prerelease);
+  const installTask = installVersionTask(latestVersion, gamePath, {
+    dispatcher: agent,
+  });
+
   setMessage("Vérification de la version...");
-
   setProgress(0);
 
   await installTask.startAndWait({
@@ -313,28 +292,24 @@ async function downloadJar(gamePath, prerelease) {
           (installTask.progress / installTask.total) * 100
         );
 
-        console.log(`Récupération de la version... (${percent}%)`);
         setMessage(`Récupération de la version en cours... (${percent}%)`);
-
         setProgress(percent);
       }
     },
   });
 
-  console.log("Vérification de la version terminé.");
   setMessage("Vérification de la version terminé.");
-
   setProgress(100);
 
   return latestVersion;
 }
 
 async function downloadLibrairies(resolvedVersion) {
-  const installTask = installLibrariesTask(resolvedVersion);
+  const installTask = installLibrariesTask(resolvedVersion, {
+    dispatcher: agent,
+  });
 
-  console.log("Vérification des librairies...");
   setMessage("Vérification des librairies...");
-
   setProgress(0);
 
   await installTask.startAndWait({
@@ -344,28 +319,23 @@ async function downloadLibrairies(resolvedVersion) {
           (installTask.progress / installTask.total) * 100
         );
 
-        console.log(`Téléchargement des librairies... (${percent}%)`);
         setMessage(`Téléchargement des librairies en cours... (${percent}%)`);
-
         setProgress(percent);
       }
     },
   });
 
-  console.log("Vérification des librairies terminé.");
   setMessage("Vérification des librairies terminé.");
-
   setProgress(100);
 }
 
 async function downloadAssets(resolvedVersion) {
   const installTask = installAssetsTask(resolvedVersion, {
     assetsHost: "https://versions.plutonia.download/assets/objects",
+    dispatcher: agent,
   });
 
-  console.log("Vérification des assets...");
   setMessage("Vérification des assets...");
-
   setProgress(0);
 
   await installTask.startAndWait({
@@ -375,27 +345,22 @@ async function downloadAssets(resolvedVersion) {
           (installTask.progress / installTask.total) * 100
         );
 
-        console.log(`Téléchargement des assets en cours... (${percent}%)`);
         setMessage(`Téléchargement des assets en cours... (${percent}%)`);
-
         setProgress(percent);
       }
     },
   });
 
-  console.log("Vérification des assets terminé.");
   setMessage("Vérification des assets terminé.");
-
   setProgress(100);
 }
 
 async function launchGame(args, options) {
-  console.log("Lancement du jeu...");
   setMessage("Lancement du jeu...");
 
   setProgress(0);
 
-  const start = await launch({
+  await launch({
     gamePath: args.gamePath,
     javaPath: args.javaPath,
     version: args.version,
@@ -414,26 +379,11 @@ async function launchGame(args, options) {
     maxMemory: (parseInt(options?.ram, 10) || 2) * 1024,
     // Change it later to minMemory & maxMemory.
     // extraJVMArgs: ["-Xms128M", `-Xmx${options?.ram ?? "2048M"}`],
-    extraMCArgs: [
-      options &&
-      options.modules &&
-      Object.values(options.modules).includes(true)
-        ? `-mods=${Object.entries(options.modules)
-            .filter(([module, isActive]) => isActive)
-            .map(([module]) => module)
-            .join(",")}`
-        : "",
-    ],
   });
 
-  // console.log('Le jeu est en cours de lancement...');
-  // setMessage('Le jeu est en cours de lancement...');
-
   setProgress(100);
-
-  // console.info('Ligne de commande: ', start.spawnargs.join(' '));
-
   disableFields(false);
+
   ipcRenderer.send("main-window-close");
 }
 /* Workers */
@@ -467,7 +417,7 @@ function saveCredentials() {
 
   ipcRenderer.send("save-to-file", CREDENTIALS_FILE_NAME, datas);
 }
-/* Other functions */
+/* Save Credentials to File */
 
 /* Convert old credentials */
 async function convertCredentials() {
@@ -522,6 +472,18 @@ async function convertCredentials() {
 /* Convert old credentials */
 
 /* Utils */
+const options = await getOptions();
+
+async function getOptions() {
+  return await ipcRenderer.invoke("get-from-file", "options.json");
+}
+
+const gamePath = await getGamePath();
+
+async function getGamePath() {
+  return await ipcRenderer.invoke("appData");
+}
+
 function setProgress(percentage) {
   const maxWidth = 447;
   const progressBarWidth = (percentage / 100) * maxWidth;
@@ -548,10 +510,24 @@ function disableFields(state) {
 }
 
 function setMessage(text) {
+  console.log(text);
   progressBarText.innerHTML = text;
 }
 
-function setErrorMessage(text) {
-  setMessage("<span style='color: red;'>" + text + "</span>");
+function setErrorMessage(text, error) {
+  if (error) {
+    console.log(error);
+  }
+
+  progressBarText.innerHTML = "<span style='color: red;'>" + text + "</span>";
 }
 /* Utils */
+
+/* Custom Undici Agent */
+const agent = new Agent({
+  headersTimeout: 45_000,
+  bodyTimeout: 60_000,
+  maxRedirections: 5,
+  connection: options.maxconnections,
+});
+/* Custom Undici Agent */
