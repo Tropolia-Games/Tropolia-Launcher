@@ -4,8 +4,6 @@ const os = require("os");
 const path = require("path");
 const fs = require("fs");
 
-const axios = require("axios");
-
 const { download } = require("@xmcl/file-transfer");
 const { BaseTask } = require("@xmcl/task");
 
@@ -133,15 +131,15 @@ class JavaExtractTask extends BaseTask {
 }
 
 async function fetchJava(url) {
-  const response = await axios.get(url);
+  const response = await fetch(url);
 
-  if (response.status !== 200) {
+  if (!response.ok) {
     throw new Error(
       `Failed to fetch Java versions. HTTP status code: ${response.status}`
     );
   }
 
-  return response.data;
+  return response.json();
 }
 
 function reorganizeExtractedFiles(folderPath) {
