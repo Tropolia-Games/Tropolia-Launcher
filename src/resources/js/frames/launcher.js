@@ -13,7 +13,7 @@ const fs = require("fs");
 /* Third-party Modules */
 const { ipcRenderer } = require("electron");
 const axios = require("axios");
-const { Agent } = require("undici");
+const { Agent, Pool } = require("undici");
 
 /* Internal Modules */
 const { Authenticator } = require("../resources/js/workers/auth-worker.js");
@@ -143,6 +143,10 @@ playButton.addEventListener("click", async (_) => {
     return disableFields(false);
   }
 
+  // Initialize the custom undici agent.
+  agent = await createAgent();
+
+  const options = await getOptions();
   let latestVersion = undefined;
 
   try {
@@ -278,6 +282,7 @@ async function getLatestVersion(prerelease) {
 
 async function downloadJar(gamePath, prerelease) {
   const latestVersion = await getLatestVersion(prerelease);
+
   const installTask = installVersionTask(latestVersion, gamePath, {
     dispatcher: agent,
   });
@@ -290,7 +295,7 @@ async function downloadJar(gamePath, prerelease) {
       if (chunkSize > 0) {
         const percent = Math.round(
           (installTask.progress / installTask.total) * 100
-        );
+        ); // Waiting for the lib to be fixed...
 
         setMessage(`Récupération de la version en cours... (${percent}%)`);
         setProgress(percent);
@@ -317,7 +322,7 @@ async function downloadLibrairies(resolvedVersion) {
       if (chunkSize > 0) {
         const percent = Math.round(
           (installTask.progress / installTask.total) * 100
-        );
+        ); // Waiting for the lib to be fixed...
 
         setMessage(`Téléchargement des librairies en cours... (${percent}%)`);
         setProgress(percent);
@@ -341,9 +346,7 @@ async function downloadAssets(resolvedVersion) {
   await installTask.startAndWait({
     onUpdate(task, chunkSize) {
       if (chunkSize > 0) {
-        const percent = Math.round(
-          (installTask.progress / installTask.total) * 100
-        );
+        const percent = Math.round((installTask.progress / 114787997) * 100); // Waiting for the lib to be fixed...
 
         setMessage(`Téléchargement des assets en cours... (${percent}%)`);
         setProgress(percent);
@@ -384,7 +387,7 @@ async function launchGame(args, options) {
   setProgress(100);
   disableFields(false);
 
-  ipcRenderer.send("main-window-close");
+  // ipcRenderer.send("main-window-close");
 }
 /* Workers */
 
@@ -472,8 +475,6 @@ async function convertCredentials() {
 /* Convert old credentials */
 
 /* Utils */
-const options = await getOptions();
-
 async function getOptions() {
   return await ipcRenderer.invoke("get-from-file", "options.json");
 }
@@ -524,11 +525,18 @@ function setErrorMessage(text, error) {
 }
 /* Utils */
 
-/* Custom Undici Agent */
-const agent = new Agent({
-  headersTimeout: 45_000,
-  bodyTimeout: 60_000,
-  maxRedirections: 5,
-  connection: options.maxconnections,
-});
-/* Custom Undici Agent */
+/* Custom undici agent (sometimes can be really aggressive) */
+let agent;
+
+async function createAgent() {
+  const options = await getOptions();
+  const maxConnections = parseInt(options.maxconnections ?? 16, 10);
+
+  return (agent = new Agent({
+    headersTimeout: 45_000,
+    bodyTimeout: 60_000,
+    maxRedirections: 5,
+    factory: (origin, opts) =>
+      new Pool(origin, { connections: maxConnections, ...opts }),
+  }));
+}
