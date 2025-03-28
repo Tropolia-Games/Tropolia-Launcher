@@ -12,8 +12,7 @@ const fs = require("fs");
 
 /* Third-party Modules */
 const { ipcRenderer } = require("electron");
-const axios = require("axios");
-const { Agent, Pool } = require("undici");
+const { Agent, interceptors, Pool } = require("undici");
 
 /* Internal Modules */
 const { Authenticator } = require("../resources/js/workers/auth-worker.js");
@@ -29,6 +28,7 @@ const {
   installLibrariesTask,
   installAssetsTask,
   installVersionTask,
+  getVersionList,
 } = require("@xmcl/installer");
 
 const { launch, Version } = require("@xmcl/core");
@@ -154,7 +154,7 @@ playButton.addEventListener("click", async (_) => {
 
     latestVersion = await downloadJar(gamePath, preRelease);
   } catch (error) {
-    setErrorMessage("Impossible de récupérer la version...", error.message);
+    setErrorMessage("Impossible de récupérer la version...", error);
     return disableFields(false);
   }
 
@@ -165,7 +165,7 @@ playButton.addEventListener("click", async (_) => {
   } catch (error) {
     setErrorMessage(
       "Une erreur s'est produite lors du téléchargement...",
-      error.message
+      error
     );
     return disableFields(false);
   }
@@ -175,7 +175,7 @@ playButton.addEventListener("click", async (_) => {
   } catch (error) {
     setErrorMessage(
       "Une erreur s'est produite lors de l'installation des assets.",
-      error.message
+      error
     );
     return disableFields(false);
   }
@@ -241,30 +241,10 @@ async function downloadJava(gamePath) {
   return extractTask;
 }
 
-const VERSION_MANIFEST_URL = "https://versions.plutonia.download/manifest.json";
-
-// Deprecated; waiting for the updated lib
-async function getVersionList(options = {}) {
-  const response = await axios.get(VERSION_MANIFEST_URL, {
-    ...options,
-    headers: {
-      "Cache-Control": "no-cache",
-      Pragma: "no-cache",
-      Expires: "0",
-    },
-  });
-
-  if (response.status !== 200) {
-    throw new Error(
-      `Failed to fetch Plutonia versions. HTTP status code: ${response.status}`
-    );
-  }
-
-  return response.data;
-}
-
 async function getLatestVersion(prerelease) {
-  const versions = await getVersionList();
+  const versions = await getVersionList({
+    remote: "https://versions.plutonia.download/manifest.json",
+  });
 
   const latestVersion = versions.versions.find((v) => {
     const targetId = prerelease
@@ -387,7 +367,7 @@ async function launchGame(args, options) {
   setProgress(100);
   disableFields(false);
 
-  // ipcRenderer.send("main-window-close");
+  ipcRenderer.send("main-window-close");
 }
 /* Workers */
 
@@ -538,5 +518,5 @@ async function createAgent() {
     maxRedirections: 5,
     factory: (origin, opts) =>
       new Pool(origin, { connections: maxConnections, ...opts }),
-  }));
+  }).compose(interceptors.redirect(), interceptors.retry()));
 }
