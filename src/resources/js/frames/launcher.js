@@ -300,9 +300,7 @@ async function downloadLibrairies(resolvedVersion) {
   await installTask.startAndWait({
     onUpdate(task, chunkSize) {
       if (chunkSize > 0) {
-        const percent = Math.round(
-          (installTask.progress / installTask.total) * 100
-        ); // Waiting for the lib to be fixed...
+        const percent = Math.round((installTask.progress / 28649230) * 100); // Waiting for the lib to be fixed...
 
         setMessage(`Téléchargement des librairies en cours... (${percent}%)`);
         setProgress(percent);
@@ -516,6 +514,8 @@ async function createAgent() {
     headersTimeout: 45_000,
     bodyTimeout: 60_000,
     maxRedirections: 5,
+    keepAliveTimeout: 60_000,
+    keepAliveMaxTimeout: 120_000,
     factory: (origin, opts) =>
       new Pool(origin, { connections: maxConnections, ...opts }),
   }).compose(interceptors.redirect(), interceptors.retry()));
