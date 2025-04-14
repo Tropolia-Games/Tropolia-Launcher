@@ -1,10 +1,11 @@
 @import url("../font.css");
-/* Style de la page principale */
+
 body {
   font-family: "LemonMilk-Pro", sans-serif;
-  width: 761px;
-  height: 824px;
-  background-image: url("../../images/background.png");
+  width: 1280px;
+  height: 720px;
+  background: linear-gradient(rgba(23, 21, 23, 0.4), rgba(23, 21, 23, 0.974)),
+    url("../../images/background.png") no-repeat center center scroll;
   background-size: cover;
   margin: 0;
   display: flex;
@@ -14,145 +15,139 @@ body {
   user-select: none;
 }
 
-/* Style de la barre de progression, et du texte */
-
-.empty-progress {
+/* Boutons de contrôle de fenêtre */
+.close,
+.reduce {
   position: absolute;
-  top: 670px;
-  left: 154px;
-  width: 449px;
-  height: 28px;
-  /* Image de fond */
-  background-image: url("../../images/elements/bar/empty.png");
-  background-size: cover;
-}
-
-.progress-text {
-  position: absolute;
-  top: 670px;
-  left: 154px;
-  width: 449px;
-  height: 28px;
-  /* Style du texte */
+  top: 0;
+  width: 46px;
+  height: 32px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 13px;
-  color: white;
-  letter-spacing: 0.5px;
-}
-
-.progress {
-  position: absolute;
-  top: 670px;
-  left: 154px;
-  width: 0px;
-  height: 28px;
-  /* Image de fond */
-  background-image: url("../../images/elements/bar/full.png");
-}
-
-/* Style du texte */
-.register {
-  position: absolute;
-  top: 615px;
-  text-align: center;
-  color: #333333;
-  width: auto;
-  font-size: 14px;
+  align-items: center;
   cursor: pointer;
-}
-
-/* Ajoute le soulignement au survol */
-.register:hover {
-  text-decoration: underline; /* Souligne le texte au survol */
-  cursor: pointer;
-}
-
-.register.disabled {
-  pointer-events: none;
-  text-decoration: none;
-}
-
-/* Style du bouton de fermeture */
-.close {
-  position: absolute;
+  transition: background-color 0.2s;
   z-index: 9999;
-  top: 113px;
-  left: 637px;
-  width: 51px;
-  height: 54px;
-  cursor: pointer;
-  background-image: url("../../images/elements/buttons/quit.png");
-  background-position: 0 0;
+  background-color: transparent;
+}
+
+.close {
+  right: 0;
+}
+
+.reduce {
+  right: 46px;
 }
 
 .close:hover {
-  background-position: 0 -54px;
+  background-color: #e81123;
 }
 
-/* Style du bouton de connexion */
-.play {
+.reduce:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.close::before,
+.close::after {
+  content: "";
   position: absolute;
-  top: 550px;
-  left: 249px;
-  width: 260px;
-  height: 60px;
-  cursor: pointer;
-  background-image: url("../../images/elements/buttons/play.png");
-  background-position: 0 0px;
+  width: 12px;
+  height: 1px;
+  background-color: #ffffff;
 }
 
-.play:hover {
-  background-position: 0 -60px;
+.close::before {
+  transform: rotate(45deg);
 }
 
-.play.disabled {
-  pointer-events: none;
-  background-position: 0 -60px;
+.close::after {
+  transform: rotate(-45deg);
 }
 
-/* Style du bouton des options */
-.settings {
+.reduce::before {
+  content: "";
+  width: 10px;
+  height: 1px;
+  background-color: #ffffff;
+}
+
+/* Titres et sous-titres */
+.title_login,
+.title_news {
+  font-family: Koulen-Regular;
+  font-size: 55px;
+  color: #d2d6e0;
   position: absolute;
-  top: 555px;
-  left: 513px;
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
-  background-image: url("../../images/elements/buttons/settings.png");
-  background-position: 0 0px;
+  top: 50px;
+  left: 60px;
 }
 
-.settings:hover {
-  background-position: 0 -50px;
+.subtitle_login,
+.subtitle_news {
+  font-family: Poppins-Medium;
+  font-size: 14px;
+  position: absolute;
+  top: 130px;
+  left: 60px;
+  color: #a3a6ae;
 }
 
-.settings.disabled {
-  pointer-events: none;
-  background-position: 0 -50px;
+/* Cartes principales */
+.login-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32%;
+  height: 100%;
+  background: #1a191d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
-/* Style du field "Nom d'utilisateur", et "Mot de passe" */
+.news-card {
+  position: absolute;
+  top: 0;
+  left: 32%;
+  width: 68%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Champs de saisie */
 .username,
 .password {
   position: absolute;
-  width: 417px;
-  height: 72px;
-  background-image: url("../../images/elements/text_field.png");
+}
+
+.username {
+  top: 180px;
+  left: 60px;
+}
+
+.password {
+  top: 280px;
+  left: 60px;
 }
 
 .username input,
 .password input {
-  border: none;
   background: none;
-  width: 100%;
-  height: 100%;
-  text-align: center;
+  width: 250px;
+  height: 55px;
   outline: none;
-  font-size: 23px;
-  font-family: "LemonMilk-Pro";
+  font-size: 15px;
+  font-family: "Poppins-Medium";
   -webkit-text-security: none;
+  border-radius: 10px;
+  padding-left: 70px;
+  border: solid 0px rgba(0, 0, 0, 0);
+  color: #909090;
+  background-color: #2f2e34;
 }
 
 .username input.disabled,
@@ -172,19 +167,134 @@ body {
   opacity: 0;
 }
 
-/* Position de la zone de texte "Nom d'utilisateur" */
-.username {
-  top: 275px;
-  left: 171px;
+/* Boutons */
+.play {
+  position: absolute;
+  width: 260px;
+  height: 50px;
+  cursor: pointer;
+  font-family: "Poppins-Medium";
+  font-size: 20px;
+  border-radius: 15px;
+  border: none;
+  background: linear-gradient(90deg, #48754d 0px, #55a45d 100%);
+  color: #fcfcfc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  left: 75px;
+  top: 400px;
 }
 
-/* Position de la zone de texte "Mot de passe" */
-.password {
-  top: 365px;
-  left: 171px;
+.play:hover {
+  background: linear-gradient(90deg, #528558 0px, #5eb466 100%);
+  color: #ffffff;
+  transition: all 0.3s;
 }
 
-/* Activer ou désactiver la possibilitée de drag */
+.play.disabled {
+  pointer-events: none;
+}
+
+.settings {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  background-image: url("../../images/elements/buttons/settings.png");
+  background-position: 0 0px;
+  left: 345px;
+  top: 400px;
+}
+
+.settings:hover {
+  background-position: 0 -50px;
+}
+
+.settings.disabled {
+  pointer-events: none;
+  background-position: 0 -50px;
+}
+
+/* Barre de progression */
+.progress-container {
+  position: absolute;
+  top: 670px;
+  left: 30px;
+  width: 350px;
+  height: 28px;
+}
+
+.empty-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #2d4930 0px, #367339 100%);
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0px;
+  height: 100%;
+  background: linear-gradient(90deg, #345937 0px, #3d8042 100%);
+  transition: width 0.1s ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: white;
+  letter-spacing: 0.5px;
+  z-index: 1;
+}
+
+/* Lien d'inscription */
+.register {
+  position: absolute;
+  top: 470px;
+  text-align: center;
+  color: #8a8a8a;
+  width: auto;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.register:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.register.disabled {
+  pointer-events: none;
+  text-decoration: none;
+}
+
+/* Icône SVG */
+.svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #909090;
+  width: 50px;
+  height: 45px;
+}
+
+/* Gestion du drag */
 .drag {
   pointer-events: none;
   -webkit-app-region: drag;

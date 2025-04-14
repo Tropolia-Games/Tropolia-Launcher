@@ -1,6 +1,6 @@
 "use strict";
 
-const AUTH_API_URL = "https://api.plutonia-mc.fr/auth/authenticate";
+const AUTH_API_URL = "https://api.tropolia.fr/auth/authenticate";
 
 class Authenticator {
   async auth(username, password, tfaCode = "") {

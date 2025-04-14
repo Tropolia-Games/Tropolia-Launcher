@@ -8,39 +8,61 @@
 
   <body class="drag">
     <div class="close no-drag"></div>
+    <div class="reduce no-drag"></div>
 
-    <div class="username no-drag">
-      <input
-        type="text"
-        spellcheck="false"
-        maxlength="16"
-        placeholder="Nom d'utilisateur"
-      />
+    <div class="login-card">
+      <div class="title_login">Connexion</div>
+      <div class="subtitle_login">Veuillez vous connecter à votre compte.</div>
+
+      <div class="username no-drag">
+        <img
+          class="svg"
+          src="../resources/images/elements/icons/mail.svg"
+          alt="Mail icon"
+        />
+        <input
+          type="text"
+          spellcheck="false"
+          maxlength="16"
+          placeholder="Nom d'utilisateur"
+        />
+      </div>
+
+      <div class="password no-drag">
+        <img
+          class="svg"
+          src="../resources/images/elements/icons/password.svg"
+          alt="Mail icon"
+        />
+
+        <input
+          type="password"
+          maxlength="32"
+          placeholder="Mot de passe"
+          required
+        />
+      </div>
+
+      <div class="play no-drag">Se connecter</div>
+      <div class="settings no-drag"></div>
+
+      <div class="register no-drag">
+        Mot de passe oublié <span style="color: #55a45d">ou</span> pas encore
+        inscrit ?
+      </div>
+
+      <div class="progress-container no-drag">
+        <div class="empty-progress">
+          <div class="progress"></div>
+        </div>
+        <div class="progress-text">Veuillez entrer vos identifiants.</div>
+      </div>
     </div>
 
-    <div class="password no-drag">
-      <input
-        type="password"
-        maxlength="32"
-        placeholder="Mot de passe"
-        required
-      />
+    <div class="news-card">
+      <div class="title_news">Nouveautees</div>
+      <div class="subtitle_news">Retrouvez toutes nos nouveautées ici !</div>
     </div>
-
-    <div class="play no-drag"></div>
-    <div class="settings no-drag"></div>
-
-    <div class="register no-drag">
-      Mot de passe oublié <span style="color: orange">ou</span> pas encore
-      inscrit ?
-    </div>
-
-    <div class="no-drag">
-      <div class="empty-progress"></div>
-      <div class="progress"></div>
-    </div>
-
-    <div class="progress-text no-drag">Veuillez entrer vos identifiants.</div>
 
     <script src="../resources/js/frames/launcher.js" type="module"></script>
   </body>

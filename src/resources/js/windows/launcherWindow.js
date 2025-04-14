@@ -28,8 +28,8 @@ function createWindow() {
 
   mainWindow = new BrowserWindow({
     title: "Tropolia - Launcher",
-    width: 761,
-    height: 824,
+    width: 1280,
+    height: 720,
     resizable: false,
     useContentSize: true,
     icon: "./src/resources/images/icons/icon." + iconExtension,
@@ -47,7 +47,7 @@ function createWindow() {
 
   mainWindow.setMenuBarVisibility(false);
 
-  mainWindow.setBounds({ x: 0, y: 0, width: 761, height: 824 });
+  mainWindow.setBounds({ x: 0, y: 0, width: 1280, height: 720 });
   mainWindow.center();
 
   mainWindow.loadFile(
@@ -71,6 +71,18 @@ function createWindow() {
     TfaWindow.destroyWindow();
     OptionWindow.destroyWindow();
   });
+}
+
+function minimizeWindow() {
+  if (mainWindow) {
+    mainWindow.minimize();
+  }
+}
+
+function closeWindow() {
+  if (mainWindow) {
+    mainWindow.close();
+  }
 }
 
 /* TFA */
@@ -110,4 +122,20 @@ ipcMain.on("show-options", () => {
 ipcMain.on("hide-options", () => OptionWindow.hideWindow());
 /* Options */
 
-module.exports = { getWindow, createWindow, destroyWindow };
+/* Window Controls */
+ipcMain.on("main-window-close", () => {
+  closeWindow();
+});
+
+ipcMain.on("main-window-minimize", () => {
+  minimizeWindow();
+});
+/* Window Controls */
+
+module.exports = {
+  getWindow,
+  createWindow,
+  destroyWindow,
+  minimizeWindow,
+  closeWindow,
+};

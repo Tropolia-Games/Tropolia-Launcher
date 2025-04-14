@@ -35,6 +35,7 @@ const { launch, Version } = require("@xmcl/core");
 
 /* HTML Fields */
 const closeButton = document.querySelector(".close");
+const reduceButton = document.querySelector(".reduce");
 
 const username = document.querySelector(".username input");
 const password = document.querySelector(".password input");
@@ -53,9 +54,13 @@ window.addEventListener("load", async () => {
   await loadCredentials();
 });
 
-closeButton.addEventListener("click", async (_) =>
-  ipcRenderer.send("main-window-close")
-);
+closeButton.addEventListener("click", () => {
+  ipcRenderer.send("main-window-close");
+});
+
+reduceButton.addEventListener("click", () => {
+  ipcRenderer.send("main-window-minimize");
+});
 
 settingsButton.addEventListener("click", async (_) => {
   ipcRenderer.send("show-options");
@@ -63,7 +68,7 @@ settingsButton.addEventListener("click", async (_) => {
 
 registerField.addEventListener("click", async (_) => {
   window.open(
-    "https://plutonia-mc.fr/user/register",
+    "https://tropolia.fr/user/register",
     "RegisterWindow",
     "width=700,height=600"
   );
@@ -243,7 +248,7 @@ async function downloadJava(gamePath) {
 
 async function getLatestVersion(prerelease) {
   const versions = await getVersionList({
-    remote: "https://versions.plutonia.download/manifest.json",
+    remote: "https://versions.tropolia.fr/manifest.json",
   });
 
   const latestVersion = versions.versions.find((v) => {
@@ -322,7 +327,7 @@ async function downloadLibrairies(resolvedVersion) {
 
 async function downloadAssets(resolvedVersion) {
   const installTask = installAssetsTask(resolvedVersion, {
-    assetsHost: "https://versions.plutonia.download/assets/objects",
+    assetsHost: "https://versions.tropolia.fr/assets/objects",
     dispatcher: agent,
   });
 
@@ -478,7 +483,7 @@ async function getGamePath() {
 }
 
 function setProgress(percentage) {
-  const maxWidth = 447;
+  const maxWidth = 350;
   const progressBarWidth = (percentage / 100) * maxWidth;
 
   progressBar.style.width = progressBarWidth + "px";
