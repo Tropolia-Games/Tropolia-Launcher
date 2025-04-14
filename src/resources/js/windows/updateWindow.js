@@ -24,7 +24,7 @@ function createWindow() {
   const iconExtension = os.platform() === "win32" ? "ico" : "png";
 
   updateWindow = new BrowserWindow({
-    title: "Plutonia - Mise à jour",
+    title: "Tropolia - Mise à jour",
     width: 400,
     height: 500,
     resizable: false,

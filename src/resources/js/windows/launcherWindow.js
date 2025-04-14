@@ -27,7 +27,7 @@ function createWindow() {
   const iconExtension = os.platform() === "win32" ? "ico" : "png";
 
   mainWindow = new BrowserWindow({
-    title: "Plutonia - Launcher",
+    title: "Tropolia - Launcher",
     width: 761,
     height: 824,
     resizable: false,

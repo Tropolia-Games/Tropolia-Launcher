@@ -104,7 +104,7 @@ function getLauncherPath() {
 
   return path.join(
     appData,
-    (os.platform() !== "darwin" ? "." : "") + "plutonia"
+    (os.platform() !== "darwin" ? "." : "") + "tropolia"
   );
 }
 /* Directories */
