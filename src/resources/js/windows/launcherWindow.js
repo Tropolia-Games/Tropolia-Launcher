@@ -35,6 +35,7 @@ function createWindow() {
     icon: "./src/resources/images/icons/icon." + iconExtension,
     frame: false,
     show: false,
+    roundedCorners: false,
     transparent: true,
     webPreferences: {
       contextIsolation: false,
