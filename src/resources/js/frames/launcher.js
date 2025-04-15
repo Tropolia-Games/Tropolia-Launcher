@@ -521,7 +521,7 @@ function setErrorMessage(text, error) {
 let agent;
 
 async function createAgent() {
-  const options = await getOptions();
+  const options = (await getOptions()) || {};
   const maxConnections = parseInt(options.maxconnections ?? 16, 10);
 
   return (agent = new Agent({
