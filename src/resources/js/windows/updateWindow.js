@@ -33,6 +33,7 @@ function createWindow() {
     frame: false,
     show: false,
     transparent: false,
+    backgroundColor: "#161616",
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
@@ -46,17 +47,14 @@ function createWindow() {
   updateWindow.setBounds({ x: 0, y: 0, width: 400, height: 500 });
   updateWindow.center();
 
-  updateWindow.loadFile(
-    path.join(`${app.getAppPath()}/src/frames/updater.html`)
-  ); // Never change this, its completly fucked up.
-
-  updateWindow.once("ready-to-show", () => {
-    if (isDev) {
-      updateWindow.webContents.openDevTools({ mode: "detach" });
-    }
-
-    updateWindow.show();
-  });
+  updateWindow
+    .loadFile(path.join(`${app.getAppPath()}/src/frames/updater.html`))
+    .then(() => {
+      if (isDev) {
+        updateWindow.webContents.openDevTools({ mode: "detach" });
+      }
+      updateWindow.show();
+    });
 }
 
 module.exports = { getWindow, createWindow, destroyWindow };

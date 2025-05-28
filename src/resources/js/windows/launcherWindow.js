@@ -36,6 +36,7 @@ function createWindow() {
     frame: false,
     show: false,
     transparent: false,
+    backgroundColor: "#161616",
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
@@ -49,21 +50,19 @@ function createWindow() {
   mainWindow.setBounds({ x: 0, y: 0, width: 1280, height: 720 });
   mainWindow.center();
 
-  mainWindow.loadFile(
-    path.join(`${app.getAppPath()}/src/frames/launcher.html`)
-  );
+  mainWindow
+    .loadFile(path.join(`${app.getAppPath()}/src/frames/launcher.html`))
+    .then(() => {
+      if (mainWindow) {
+        if (isDev) {
+          mainWindow.webContents.openDevTools({ mode: "detach" });
+        }
 
-  mainWindow.once("ready-to-show", () => {
-    if (mainWindow) {
-      if (isDev) {
-        mainWindow.webContents.openDevTools({ mode: "detach" });
+        OptionWindow.createWindow();
+        TfaWindow.createWindow();
+        mainWindow.show();
       }
-
-      OptionWindow.createWindow();
-      TfaWindow.createWindow();
-      mainWindow.show();
-    }
-  });
+    });
 
   // Clean up and destroy any pre-loaded windows when the main window is closed.
   mainWindow.on("close", () => {
