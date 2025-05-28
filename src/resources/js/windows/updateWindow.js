@@ -32,7 +32,7 @@ function createWindow() {
     icon: "./src/resources/images/icons/icon." + iconExtension, // Never change this, its completly fucked up.
     frame: false,
     show: false,
-    transparent: true,
+    transparent: false,
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
