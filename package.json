@@ -1,6 +1,6 @@
 {
   "name": "Tropolia",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "A powerful launcher for Tropolia, built with Electron and JavaScript.",
   "author": "Tropolia Team",
   "main": "src/app.js",
