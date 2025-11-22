@@ -64,3 +64,9 @@ body {
 .confirm-button:hover {
   background-color: #e0e0e0;
 }
+
+input:focus,
+select:focus,
+button:focus {
+  outline: 2px solid #8f312f;
+}
