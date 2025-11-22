@@ -50,7 +50,6 @@ const progressBarText = document.querySelector(".progress-text");
 
 /* Registering listeners */
 window.addEventListener("load", async () => {
-  await convertCredentials();
   await loadCredentials();
 });
 
@@ -299,12 +298,6 @@ async function downloadLibrairies(resolvedVersion) {
     dispatcher: agent,
   });
 
-  // Since the current `installTask.total` is currently broken, we need to use this thing...
-  const totalLibrairiesSize = resolvedVersion.libraries.reduce(
-    (sum, lib) => sum + (lib.download?.size || 0),
-    0
-  );
-
   setMessage("Vérification des librairies...");
   setProgress(0);
 
@@ -312,8 +305,8 @@ async function downloadLibrairies(resolvedVersion) {
     onUpdate(task, chunkSize) {
       if (chunkSize > 0) {
         const percent = Math.round(
-          (installTask.progress / totalLibrairiesSize) * 100
-        ); // Waiting for the lib to be fixed...
+          (installTask.progress / installTask.total) * 100
+        );
 
         setMessage(`Téléchargement des librairies en cours... (${percent}%)`);
         setProgress(percent);
@@ -331,10 +324,6 @@ async function downloadAssets(resolvedVersion) {
     dispatcher: agent,
   });
 
-  // Since the current `installTask.total` is currently broken, we need to use this thing...
-  const { totalSize, size } = resolvedVersion.assetIndex;
-  const totalAssetsSize = totalSize + size;
-
   setMessage("Vérification des assets...");
   setProgress(0);
 
@@ -342,8 +331,8 @@ async function downloadAssets(resolvedVersion) {
     onUpdate(task, chunkSize) {
       if (chunkSize > 0) {
         const percent = Math.round(
-          (installTask.progress / totalAssetsSize) * 100
-        ); // Waiting for the lib to be fixed...
+          (installTask.progress / installTask.total) * 100
+        );
 
         setMessage(`Téléchargement des assets en cours... (${percent}%)`);
         setProgress(percent);
@@ -377,8 +366,12 @@ async function launchGame(args, options) {
     ignorePatchDiscrepancies: true,
     minMemory: 128,
     maxMemory: (parseInt(options?.ram, 10) || 2) * 1024,
-    // Change it later to minMemory & maxMemory.
-    // extraJVMArgs: ["-Xms128M", `-Xmx${options?.ram ?? "2048M"}`],
+    extraJVMArgs: [
+      "-XX:+UseG1GC",
+      "-XX:MaxGCPauseMillis=10",
+      "-XX:G1HeapRegionSize=32m",
+      "-XX:+DisableAttachMechanism",
+    ],
   });
 
   setProgress(100);
@@ -418,58 +411,6 @@ function saveCredentials() {
   ipcRenderer.send("save-to-file", CREDENTIALS_FILE_NAME, datas);
 }
 /* Save Credentials to File */
-
-/* Convert old credentials */
-async function convertCredentials() {
-  const credentialsFile = path.join(
-    await ipcRenderer.invoke("appData"),
-    "credentials.yml"
-  );
-
-  if (!fs.existsSync(credentialsFile)) {
-    return;
-  }
-
-  fs.readFile(credentialsFile, "utf8", (error, fileContent) => {
-    if (error) {
-      console.error("Erreur lors de la lecture du fichier: ", error);
-    }
-
-    console.log(fileContent);
-
-    const lines = fileContent.split("\n");
-
-    let user, pass;
-
-    for (const line of lines) {
-      if (line.startsWith("username=")) {
-        user = line.split("=")[1].trim();
-      } else if (line.startsWith("password=")) {
-        pass = line.split("=")[1].trim();
-      }
-    }
-
-    if (user && pass) {
-      username.value = user;
-      password.value = pass;
-
-      saveCredentials();
-
-      fs.unlink(credentialsFile, (unlinkErr) => {
-        if (unlinkErr) {
-          console.error(
-            "Erreur lors de la suppression du fichier: ",
-            unlinkErr
-          );
-          return;
-        }
-
-        console.log("Fichier credentials.yml supprimé avec succès.");
-      });
-    }
-  });
-}
-/* Convert old credentials */
 
 /* Utils */
 async function getOptions() {
