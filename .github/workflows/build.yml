@@ -63,34 +63,34 @@ jobs:
         run: npm run build
         shell: bash
 
-      - name: Sign with EV cert on Azure (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: bash
-        run: |
-          dotnet tool install --global AzureSignTool
-          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" --azure-key-vault-tenant-id "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.globalsign.com/tsa/advanced -td sha256 "dist/Tropolia-win-x64.exe"
-          mv dist/Tropolia-win-x64.exe dist/Tropolia-win-x64-signed.exe
+      #- name: Sign with EV cert on Azure (Windows)
+      #  if: matrix.os == 'windows-latest'
+      #  shell: bash
+      #  run: |
+      #    dotnet tool install --global AzureSignTool
+      #    AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" --azure-key-vault-tenant-id "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.globalsign.com/tsa/advanced -td sha256 "dist/Tropolia-win-x64.exe"
+      #    mv dist/Tropolia-win-x64.exe dist/Tropolia-win-x64-signed.exe
 
-      - name: Upload signed executable to release (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: dist/Tropolia-win-x64-signed.exe
-          asset_name: Tropolia-win-x64-signed.exe
-          asset_content_type: application/octet-stream
+      #- name: Upload signed executable to release (Windows)
+      #  if: matrix.os == 'windows-latest'
+      #  uses: actions/upload-release-asset@v1
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+      #  with:
+      #    upload_url: ${{ needs.create-release.outputs.upload_url }}
+      #    asset_path: dist/Tropolia-win-x64-signed.exe
+      #    asset_name: Tropolia-win-x64-signed.exe
+      #    asset_content_type: application/octet-stream
 
-      - name: Get upload URL from VirusTotal (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: bash
-        run: |
-          BIGFILE_URL=$(curl --request GET --url "https://www.virustotal.com/api/v3/files/upload_url" --header "accept: application/json" --header "x-apikey: ${{ secrets.VIRUSTOTAL_KEY }}" | jq -r '.data')
-          echo "BIGFILE_URL=$BIGFILE_URL" >> $GITHUB_ENV
+      #- name: Get upload URL from VirusTotal (Windows)
+      #  if: matrix.os == 'windows-latest'
+      #  shell: bash
+      #  run: |
+      #    BIGFILE_URL=$(curl --request GET --url "https://www.virustotal.com/api/v3/files/upload_url" --header "accept: application/json" --header "x-apikey: ${{ secrets.VIRUSTOTAL_KEY }}" | jq -r '.data')
+      #    echo "BIGFILE_URL=$BIGFILE_URL" >> $GITHUB_ENV
 
-      - name: Upload file to VirusTotal (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: bash
-        run: |
-          curl --request POST --url "$BIGFILE_URL" --header "accept: application/json" --header "content-type: multipart/form-data" --header "x-apikey: ${{ secrets.VIRUSTOTAL_KEY }}" --form file="@dist/Tropolia-win-x64-signed.exe"
+      #- name: Upload file to VirusTotal (Windows)
+      #  if: matrix.os == 'windows-latest'
+      #  shell: bash
+      #  run: |
+      #    curl --request POST --url "$BIGFILE_URL" --header "accept: application/json" --header "content-type: multipart/form-data" --header "x-apikey: ${{ secrets.VIRUSTOTAL_KEY }}" --form file="@dist/Tropolia-win-x64-signed.exe"
