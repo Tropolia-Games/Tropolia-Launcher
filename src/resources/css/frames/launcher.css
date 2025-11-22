@@ -93,6 +93,15 @@ body {
   color: #a3a6ae;
 }
 
+.splash-logo {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 140px;
+}
+
 /* Cartes principales */
 .login-card {
   position: absolute;
@@ -239,12 +248,12 @@ body {
 }
 
 .username {
-  top: 180px;
+  top: 210px;
   left: 45px;
 }
 
 .password {
-  top: 280px;
+  top: 310px;
   left: 45px;
 }
 
@@ -303,17 +312,17 @@ body {
   font-size: 20px;
   border-radius: 15px;
   border: none;
-  background: linear-gradient(90deg, #48754d 0px, #55a45d 100%);
+  background: linear-gradient(90deg, #9c5241 0px, #8f312f 100%);
   color: #fcfcfc;
   display: flex;
   align-items: center;
   justify-content: center;
   left: 75px;
-  top: 400px;
+  top: 430px;
 }
 
 .play:hover {
-  background: linear-gradient(90deg, #528558 0px, #5eb466 100%);
+  background: linear-gradient(90deg, #b36250 0px, #a63a38 100%);
   color: #ffffff;
   transition: all 0.3s;
 }
@@ -330,7 +339,7 @@ body {
   background-image: url("../../images/elements/buttons/settings.png");
   background-position: 0 0px;
   left: 345px;
-  top: 400px;
+  top: 430px;
 }
 
 .settings:hover {
@@ -357,7 +366,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, #2d4930 0px, #367339 100%);
+  background: linear-gradient(90deg, #4a2d28 0px, #3d2422 100%);
   border-radius: 15px;
   overflow: hidden;
 }
@@ -368,7 +377,7 @@ body {
   left: 0;
   width: 0px;
   height: 100%;
-  background: linear-gradient(90deg, #345937 0px, #3d8042 100%);
+  background: linear-gradient(90deg, #9c5241 0px, #8f312f 100%);
   transition: width 0.1s ease;
 }
 
@@ -390,7 +399,7 @@ body {
 /* Lien d'inscription */
 .register {
   position: absolute;
-  top: 470px;
+  top: 500px;
   text-align: center;
   color: #8a8a8a;
   width: auto;
