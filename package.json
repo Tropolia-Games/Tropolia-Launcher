@@ -10,20 +10,20 @@
     "build": "node build.js --obf=false --build=platform"
   },
   "dependencies": {
-    "@xmcl/core": "^2.14.1",
-    "@xmcl/file-transfer": "^2.0.2",
-    "@xmcl/installer": "^6.1.0",
+    "@xmcl/core": "^2.15.1",
+    "@xmcl/file-transfer": "^2.0.3",
+    "@xmcl/installer": "^6.1.2",
     "@xmcl/task": "^4.1.1",
     "adm-zip": "^0.5.16",
     "decompress": "^4.2.1",
     "electron-updater": "^6.6.2"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
-    "electron": "^37.2.4",
+    "cross-env": "^10.1.0",
+    "electron": "^39.2.3",
     "electron-builder": "^26.0.12",
     "javascript-obfuscator": "^4.1.1",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.11"
   },
   "repository": {
     "type": "git",
