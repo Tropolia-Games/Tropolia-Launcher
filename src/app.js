@@ -70,7 +70,7 @@ ipcMain.handle("get-from-file", (event, file) => {
       "utf-8"
     );
 
-    console.log("File data loaded.");
+    console.log("File data loaded. (" + file + ")");
     return JSON.parse(data);
   } catch (error) {
     console.error("Error reading file :", error);

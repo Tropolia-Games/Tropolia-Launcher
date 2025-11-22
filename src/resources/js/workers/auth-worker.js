@@ -27,15 +27,15 @@ class Authenticator {
 
     const jsonResponse = await response.json();
 
-    if (jsonResponse.status === "200") {
+    if (response.status === 200) {
       return {
-        name: username,
+        name: jsonResponse.name,
         token: jsonResponse.session,
         uuid: jsonResponse.uuid,
       };
     }
 
-    if (jsonResponse.status === "400") {
+    if (response.status === 400) {
       return { error: true, type: "tfa" };
     }
 
