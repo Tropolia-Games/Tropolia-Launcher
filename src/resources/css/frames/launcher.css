@@ -271,6 +271,7 @@ body {
   border: solid 0px rgba(0, 0, 0, 0);
   color: #909090;
   background-color: #2f2e34;
+  padding-right: 15px;
 }
 
 .username input.disabled,
