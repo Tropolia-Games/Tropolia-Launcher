@@ -83,7 +83,7 @@ class Index {
           generateUpdatesFilesForAllChannels: false,
           appId: preductname,
           productName: preductname,
-          copyright: "Copyright © 2014-2025 Tropolia",
+          copyright: "Copyright © 2025-2026 Tropolia",
           artifactName: "${productName}-${os}-${arch}.${ext}",
           extraMetadata: { main: "app/app.js" },
           files: [
