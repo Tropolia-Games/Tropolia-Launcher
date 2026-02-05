@@ -1,6 +1,6 @@
 {
   "name": "Tropolia",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "A powerful launcher for Tropolia, built with Electron and JavaScript.",
   "author": "Tropolia Team",
   "main": "src/app.js",
@@ -20,9 +20,9 @@
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
-    "electron": "^39.2.7",
-    "electron-builder": "^26.4.0",
-    "javascript-obfuscator": "^5.1.0",
+    "electron": "^40.1.0",
+    "electron-builder": "^26.7.0",
+    "javascript-obfuscator": "^5.3.0",
     "nodemon": "^3.1.11"
   },
   "repository": {
