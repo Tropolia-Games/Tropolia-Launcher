@@ -57,8 +57,8 @@ class Index {
               fs.writeFileSync(
                 `${folder}/${fileName}`,
                 obf.getObfuscatedCode(),
-                { encoding: "utf-8" }
-              )
+                { encoding: "utf-8" },
+              ),
             );
           });
         } else {
@@ -123,10 +123,6 @@ class Index {
             category: "public.app-category.games",
             identity: null,
             target: [
-              {
-                target: "dmg",
-                arch: "universal",
-              },
               {
                 target: "zip",
                 arch: "universal",
