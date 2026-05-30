@@ -69,7 +69,7 @@ registerField.addEventListener("click", async (_) => {
   window.open(
     "https://tropolia.fr/user/register",
     "RegisterWindow",
-    "width=700,height=600"
+    "width=700,height=600",
   );
 });
 
@@ -79,7 +79,7 @@ let devTool = false;
 document.addEventListener("keydown", (e) => {
   if (e.keyCode == 123) {
     ipcRenderer.send(
-      devTool ? "main-window-dev-tools-close" : "main-window-dev-tools"
+      devTool ? "main-window-dev-tools-close" : "main-window-dev-tools",
     );
     devTool = !devTool;
   }
@@ -123,7 +123,7 @@ playButton.addEventListener("click", async (_) => {
         authResult = await authenticator.auth(
           username.value,
           password.value,
-          tfaResult.code
+          tfaResult.code,
         );
       } catch (error) {
         setErrorMessage(error.message);
@@ -169,7 +169,7 @@ playButton.addEventListener("click", async (_) => {
   } catch (error) {
     setErrorMessage(
       "Une erreur s'est produite lors du téléchargement...",
-      error
+      error,
     );
     return disableFields(false);
   }
@@ -179,7 +179,7 @@ playButton.addEventListener("click", async (_) => {
   } catch (error) {
     setErrorMessage(
       "Une erreur s'est produite lors de l'installation des assets.",
-      error
+      error,
     );
     return disableFields(false);
   }
@@ -191,7 +191,7 @@ playButton.addEventListener("click", async (_) => {
       javaPath: javaPath,
       authResult: authResult,
     },
-    options
+    options,
   );
 });
 /* Registering listeners */
@@ -278,7 +278,7 @@ async function downloadJar(gamePath, prerelease) {
     onUpdate(task, chunkSize) {
       if (chunkSize > 0) {
         const percent = Math.round(
-          (installTask.progress / installTask.total) * 100
+          (installTask.progress / installTask.total) * 100,
         ); // Waiting for the lib to be fixed...
 
         setMessage(`Récupération de la version en cours... (${percent}%)`);
@@ -305,7 +305,7 @@ async function downloadLibrairies(resolvedVersion) {
     onUpdate(task, chunkSize) {
       if (chunkSize > 0) {
         const percent = Math.round(
-          (installTask.progress / installTask.total) * 100
+          (installTask.progress / installTask.total) * 100,
         );
 
         setMessage(`Téléchargement des librairies en cours... (${percent}%)`);
@@ -331,7 +331,7 @@ async function downloadAssets(resolvedVersion) {
     onUpdate(task, chunkSize) {
       if (chunkSize > 0) {
         const percent = Math.round(
-          (installTask.progress / installTask.total) * 100
+          (installTask.progress / installTask.total) * 100,
         );
 
         setMessage(`Téléchargement des assets en cours... (${percent}%)`);
@@ -349,7 +349,7 @@ async function launchGame(args, options) {
 
   setProgress(0);
 
-  await launch({
+  const gameProcess = await launch({
     gamePath: args.gamePath,
     javaPath: args.javaPath,
     version: args.version,
@@ -361,6 +361,7 @@ async function launchGame(args, options) {
     userType: "legacy",
     extraExecOption: {
       detached: true,
+      stdio: "ignore",
     },
     ignoreInvalidMinecraftCertificates: true,
     ignorePatchDiscrepancies: true,
@@ -374,10 +375,16 @@ async function launchGame(args, options) {
     ],
   });
 
+  gameProcess.unref();
+
   setProgress(100);
   disableFields(false);
 
-  ipcRenderer.send("main-window-close");
+  ipcRenderer.send("main-window-hide");
+
+  gameProcess.on("close", () => {
+    ipcRenderer.send("main-window-show");
+  });
 }
 /* Workers */
 
@@ -387,7 +394,7 @@ const CREDENTIALS_FILE_NAME = "credentials.json";
 async function loadCredentials() {
   const credentials = await ipcRenderer.invoke(
     "get-from-file",
-    CREDENTIALS_FILE_NAME
+    CREDENTIALS_FILE_NAME,
   );
 
   if (credentials.username) {
@@ -396,7 +403,7 @@ async function loadCredentials() {
 
   if (credentials.password) {
     password.value = Buffer.from(credentials.password, "base64").toString(
-      "utf-8"
+      "utf-8",
     );
   }
 }

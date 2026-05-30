@@ -14,13 +14,6 @@ function getWindow() {
   return mainWindow;
 }
 
-function destroyWindow() {
-  if (mainWindow) {
-    app.quit();
-    mainWindow = undefined;
-  }
-}
-
 function createWindow() {
   destroyWindow();
 
@@ -72,6 +65,13 @@ function createWindow() {
   });
 }
 
+function destroyWindow() {
+  if (mainWindow) {
+    app.quit();
+    mainWindow = undefined;
+  }
+}
+
 function minimizeWindow() {
   if (mainWindow) {
     mainWindow.minimize();
@@ -81,6 +81,18 @@ function minimizeWindow() {
 function closeWindow() {
   if (mainWindow) {
     mainWindow.close();
+  }
+}
+
+function hideWindow() {
+  if (mainWindow) {
+    mainWindow.hide();
+  }
+}
+
+function showWindow() {
+  if (mainWindow) {
+    mainWindow.show();
   }
 }
 
@@ -122,12 +134,20 @@ ipcMain.on("hide-options", () => OptionWindow.hideWindow());
 /* Options */
 
 /* Window Controls */
+ipcMain.on("main-window-minimize", () => {
+  minimizeWindow();
+});
+
 ipcMain.on("main-window-close", () => {
   closeWindow();
 });
 
-ipcMain.on("main-window-minimize", () => {
-  minimizeWindow();
+ipcMain.on("main-window-hide", () => {
+  hideWindow();
+});
+
+ipcMain.on("main-window-show", () => {
+  showWindow();
 });
 /* Window Controls */
 
@@ -137,4 +157,6 @@ module.exports = {
   destroyWindow,
   minimizeWindow,
   closeWindow,
+  hideWindow,
+  showWindow,
 };
