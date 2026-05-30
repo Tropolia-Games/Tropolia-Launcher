@@ -11,6 +11,8 @@ const fs = require("fs");
 const UpdateWindow = require("./resources/js/windows/updateWindow.js");
 const MainWindow = require("./resources/js/windows/launcherWindow.js");
 
+const BrowserManager = require("./resources/js/managers/browserManager.js");
+
 let isDev = process.env.NODE_ENV === "dev";
 
 if (isDev) {
@@ -33,6 +35,8 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
   app.whenReady().then(() => {
+    BrowserManager.start();
+
     if (isDev) {
       return openMainWindow();
     }
@@ -43,11 +47,11 @@ if (!app.requestSingleInstanceLock()) {
 
 /* Listeners */
 ipcMain.on("main-window-dev-tools", () =>
-  MainWindow.getWindow().webContents.openDevTools({ mode: "detach" })
+  MainWindow.getWindow().webContents.openDevTools({ mode: "detach" }),
 );
 
 ipcMain.on("main-window-dev-tools-close", () =>
-  MainWindow.getWindow().webContents.closeDevTools()
+  MainWindow.getWindow().webContents.closeDevTools(),
 );
 
 ipcMain.on("main-window-open", () => openMainWindow());
@@ -67,7 +71,7 @@ ipcMain.handle("get-from-file", (event, file) => {
   try {
     const data = fs.readFileSync(
       path.join(app.getPath("userData"), file),
-      "utf-8"
+      "utf-8",
     );
 
     console.log("File data loaded. (" + file + ")");
@@ -82,7 +86,7 @@ ipcMain.on("save-to-file", async (event, file, datas) => {
     fs.writeFileSync(
       path.join(app.getPath("userData"), file),
       JSON.stringify(datas, null, 2),
-      "utf8"
+      "utf8",
     );
 
     console.log(`File saved successfully. (${file})`);
@@ -104,7 +108,7 @@ function getLauncherPath() {
 
   return path.join(
     appData,
-    (os.platform() !== "darwin" ? "." : "") + "tropolia"
+    (os.platform() !== "darwin" ? "." : "") + "tropolia",
   );
 }
 /* Directories */
@@ -168,4 +172,7 @@ autoUpdater.on("error", (err) => {
 /* Updater messaging */
 
 /* App clean close */
-app.on("window-all-closed", () => app.quit());
+app.on("window-all-closed", () => {
+  BrowserManager.stop();
+  app.quit();
+});
