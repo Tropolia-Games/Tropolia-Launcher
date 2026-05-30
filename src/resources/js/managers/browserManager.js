@@ -1,118 +1,66 @@
 "use strict";
 
-const { BrowserWindow } = require("electron");
 const WebSocket = require("ws");
 
-let browserWin = null;
+const BrowserWindow = require("../windows/browserWindow.js");
+const ScreenStreamer = require("../stream/screenStreamer.js");
+
 let wss = null;
 let wsClient = null;
 
-function startPaintStream() {
-  if (!browserWin || browserWin.isDestroyed()) {
-    return;
-  }
-
-  browserWin.webContents.on("paint", (event, dirty, image) => {
-    if (!wsClient || wsClient.readyState !== WebSocket.OPEN) {
-      return;
-    }
-
-    if (wsClient.bufferedAmount > 30000) {
-      return;
-    }
-
-    try {
-      const [fw, fh] = browserWin.getSize();
-      wsClient.send(
-        JSON.stringify({
-          type: "frame",
-          url: browserWin.webContents.getURL(),
-          x: dirty.x,
-          y: dirty.y,
-          w: dirty.width,
-          h: dirty.height,
-          fw,
-          fh,
-        }),
-      );
-      wsClient.send(image.crop(dirty).toJPEG(70));
-    } catch (e) {
-      console.error(e.message);
-    }
-  });
-
-  browserWin.webContents.setFrameRate(60);
+function getContents() {
+  return BrowserWindow.getWindow().webContents;
 }
 
-function createBrowserWindow(w, h) {
-  browserWin = new BrowserWindow({
-    width: w,
-    height: h,
-    show: false,
-    frame: false,
-    skipTaskbar: true,
-    resizable: true,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      offscreen: true,
-    },
+function sendMouseEvent(type, x, y) {
+  getContents().sendInputEvent({
+    type: type,
+    x: x,
+    y: y,
+    button: "left",
+    clickCount: 1,
   });
-
-  browserWin.webContents.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-  );
-
-  browserWin.webContents.setWindowOpenHandler(({ url }) => {
-    browserWin.webContents.loadURL(url);
-    return { action: "deny" };
-  });
-
-  browserWin.on("closed", () => {
-    browserWin = null;
-  });
-
-  startPaintStream();
 }
 
 async function handleMessage(msg) {
   if (msg.type === "load") {
-    if (!browserWin || browserWin.isDestroyed()) {
-      createBrowserWindow(msg.w, msg.h);
+    if (!BrowserWindow.isReady()) {
+      BrowserWindow.createWindow(msg.w, msg.h);
+      ScreenStreamer.start(BrowserWindow.getWindow(), () => wsClient);
     }
 
-    browserWin.setSize(msg.w, msg.h);
-    await browserWin.webContents.loadURL(msg.url);
-  } else if (msg.type === "click") {
-    if (!browserWin || browserWin.isDestroyed()) {
+    BrowserWindow.getWindow().setSize(msg.w, msg.h);
+    await getContents().loadURL(msg.url);
+  } else if (msg.type === "mousedown") {
+    if (!BrowserWindow.isReady()) {
       return;
     }
 
-    browserWin.webContents.sendInputEvent({
+    sendMouseEvent("mouseMove", msg.x, msg.y);
+    sendMouseEvent("mouseDown", msg.x, msg.y);
+  } else if (msg.type === "mouseup") {
+    if (!BrowserWindow.isReady()) {
+      return;
+    }
+
+    sendMouseEvent("mouseUp", msg.x, msg.y);
+  } else if (msg.type === "mousemove") {
+    if (!BrowserWindow.isReady()) {
+      return;
+    }
+
+    getContents().sendInputEvent({
       type: "mouseMove",
       x: msg.x,
       y: msg.y,
-    });
-    browserWin.webContents.sendInputEvent({
-      type: "mouseDown",
-      x: msg.x,
-      y: msg.y,
-      button: "left",
-      clickCount: 1,
-    });
-    browserWin.webContents.sendInputEvent({
-      type: "mouseUp",
-      x: msg.x,
-      y: msg.y,
-      button: "left",
-      clickCount: 1,
+      modifiers: msg.dragging ? ["leftButtonDown"] : [],
     });
   } else if (msg.type === "scroll") {
-    if (!browserWin || browserWin.isDestroyed()) {
+    if (!BrowserWindow.isReady()) {
       return;
     }
 
-    browserWin.webContents.sendInputEvent({
+    getContents().sendInputEvent({
       type: "mouseWheel",
       x: msg.x,
       y: msg.y,
@@ -121,53 +69,50 @@ async function handleMessage(msg) {
       canScroll: true,
     });
   } else if (msg.type === "keydown") {
-    if (!browserWin || browserWin.isDestroyed()) {
+    if (!BrowserWindow.isReady()) {
       return;
     }
 
-    browserWin.webContents.sendInputEvent({
-      type: "keyDown",
-      keyCode: msg.key,
-    });
+    getContents().sendInputEvent({ type: "keyDown", keyCode: msg.key });
 
     if (msg.key.length === 1) {
-      browserWin.webContents.sendInputEvent({ type: "char", keyCode: msg.key });
+      getContents().sendInputEvent({ type: "char", keyCode: msg.key });
     }
 
-    browserWin.webContents.sendInputEvent({ type: "keyUp", keyCode: msg.key });
+    getContents().sendInputEvent({ type: "keyUp", keyCode: msg.key });
   } else if (msg.type === "back") {
-    if (!browserWin || browserWin.isDestroyed()) {
+    if (!BrowserWindow.isReady()) {
       return;
     }
 
-    if (browserWin.webContents.canGoBack()) {
-      browserWin.webContents.goBack();
+    if (getContents().canGoBack()) {
+      getContents().goBack();
     }
   } else if (msg.type === "reload") {
-    if (!browserWin || browserWin.isDestroyed()) {
+    if (!BrowserWindow.isReady()) {
       return;
     }
 
-    browserWin.webContents.reload();
+    getContents().reload();
   } else if (msg.type === "navigate") {
-    if (!browserWin || browserWin.isDestroyed()) {
+    if (!BrowserWindow.isReady()) {
       return;
     }
 
-    await browserWin.webContents.loadURL(msg.url);
+    await getContents().loadURL(msg.url);
   } else if (msg.type === "resize") {
-    if (!browserWin || browserWin.isDestroyed()) {
+    if (!BrowserWindow.isReady()) {
       return;
     }
 
-    browserWin.setSize(msg.w, msg.h);
-    browserWin.webContents.invalidate();
+    BrowserWindow.getWindow().setSize(msg.w, msg.h);
+    getContents().invalidate();
   } else if (msg.type === "close") {
-    if (!browserWin || browserWin.isDestroyed()) {
+    if (!BrowserWindow.isReady()) {
       return;
     }
 
-    browserWin.webContents.loadURL("about:blank");
+    getContents().loadURL("about:blank");
   }
 }
 
@@ -193,9 +138,7 @@ function start() {
 }
 
 function stop() {
-  if (browserWin && !browserWin.isDestroyed()) {
-    browserWin.close();
-  }
+  BrowserWindow.destroyWindow();
 
   if (wss) {
     wss.close();

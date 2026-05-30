@@ -13,6 +13,15 @@ body {
   margin: 0;
 }
 
+html,
+body {
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
 .hidden {
   display: none;
 }
@@ -24,7 +33,9 @@ body {
   transform: translateX(-50%);
   width: 140px;
   height: 140px;
-  transition: opacity 0.3s, top 1.5s;
+  transition:
+    opacity 0.3s,
+    top 1.5s;
   opacity: 0;
 }
 

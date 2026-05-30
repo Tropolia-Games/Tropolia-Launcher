@@ -5,7 +5,8 @@ body {
   font-family: "LemonMilk-Pro", sans-serif;
   width: 1280px;
   height: 720px;
-  background: linear-gradient(rgba(23, 21, 23, 0.4), rgba(23, 21, 23, 0.974)),
+  background:
+    linear-gradient(rgba(23, 21, 23, 0.4), rgba(23, 21, 23, 0.974)),
     url("../../images/background.png") no-repeat center center scroll;
   background-size: cover;
   margin: 0;
@@ -14,6 +15,15 @@ body {
   align-items: center;
   -webkit-user-drag: none;
   user-select: none;
+}
+
+html,
+body {
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  display: none;
 }
 
 /* Boutons de contrôle de fenêtre */
@@ -145,7 +155,9 @@ body {
   border-radius: 10px;
   height: 150px;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   cursor: pointer;
   position: relative;
 }
