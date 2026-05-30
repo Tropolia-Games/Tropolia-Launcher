@@ -116,8 +116,29 @@ async function handleMessage(msg) {
   }
 }
 
+let stopped = false;
+
 function start() {
+  stopped = false;
+  tryStart();
+}
+
+function tryStart() {
+  if (stopped) {
+    return;
+  }
+
   wss = new WebSocket.Server({ port: 7777 });
+
+  wss.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      wss = null;
+      setTimeout(tryStart, 10000);
+      return;
+    }
+
+    console.error(err.message);
+  });
 
   wss.on("connection", (ws) => {
     wsClient = ws;
@@ -138,6 +159,7 @@ function start() {
 }
 
 function stop() {
+  stopped = true;
   BrowserWindow.destroyWindow();
 
   if (wss) {

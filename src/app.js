@@ -31,19 +31,15 @@ if (isDev) {
   app.setPath("appData", appdata);
 }
 
-if (!app.requestSingleInstanceLock()) {
-  app.quit();
-} else {
-  app.whenReady().then(() => {
-    BrowserManager.start();
+app.whenReady().then(() => {
+  BrowserManager.start();
 
-    if (isDev) {
-      return openMainWindow();
-    }
+  if (isDev) {
+    return openMainWindow();
+  }
 
-    UpdateWindow.createWindow();
-  });
-}
+  UpdateWindow.createWindow();
+});
 
 /* Listeners */
 ipcMain.on("main-window-dev-tools", () =>
