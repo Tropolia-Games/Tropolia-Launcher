@@ -362,6 +362,10 @@ async function launchGame(args, options) {
     extraExecOption: {
       detached: true,
       stdio: "ignore",
+      env: {
+        ...process.env,
+        AUTH_KEY: args.authResult.key,
+      },
     },
     ignoreInvalidMinecraftCertificates: true,
     ignorePatchDiscrepancies: true,

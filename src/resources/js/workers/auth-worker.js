@@ -32,6 +32,7 @@ class Authenticator {
         name: jsonResponse.name,
         token: jsonResponse.session,
         uuid: jsonResponse.uuid,
+        key: jsonResponse.key,
       };
     }
 
