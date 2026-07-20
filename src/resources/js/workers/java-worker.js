@@ -8,7 +8,7 @@ const { download } = require("@xmcl/file-transfer");
 const { BaseTask } = require("@xmcl/task");
 
 const AdmZip = require("adm-zip");
-const decompress = require("decompress");
+const decompress = require("@xhmikosr/decompress");
 
 const JAVA_DOWNLOAD_URL = `https://api.adoptium.net/v3/assets/latest/{version}/hotspot`;
 
@@ -27,7 +27,7 @@ class JavaDownloadTask extends BaseTask {
 
     const pathFolder = path.resolve(
       this.gamePath,
-      `runtime/${this.javaType}-${this.javaVersion}`
+      `runtime/${this.javaType}-${this.javaVersion}`,
     );
 
     const javaExecutable = getExecutablePath(pathFolder, systemArch.platform);
@@ -39,7 +39,7 @@ class JavaDownloadTask extends BaseTask {
     const javaRuntime = getCompatibleJava(
       await fetchJava(JAVA_DOWNLOAD_URL.replace("{version}", this.javaVersion)),
       this.javaType,
-      systemArch
+      systemArch,
     );
 
     if (!javaRuntime) {
@@ -135,7 +135,7 @@ async function fetchJava(url) {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch Java versions. HTTP status code: ${response.status}`
+      `Failed to fetch Java versions. HTTP status code: ${response.status}`,
     );
   }
 
@@ -155,8 +155,8 @@ function reorganizeExtractedFiles(folderPath) {
     fs.readdirSync(extractedFolder).forEach((item) =>
       fs.renameSync(
         path.join(extractedFolder, item),
-        path.join(folderPath, item)
-      )
+        path.join(folderPath, item),
+      ),
     );
 
     fs.rmdirSync(extractedFolder);
@@ -177,7 +177,7 @@ function getCompatibleJava(fetchedJava, javaType, systemArch) {
     ({ binary }) =>
       binary.image_type === javaType &&
       binary.architecture === systemArch.arch &&
-      binary.os === systemArch.platform
+      binary.os === systemArch.platform,
   );
 }
 

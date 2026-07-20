@@ -257,16 +257,16 @@ body {
 .username,
 .password {
   position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .username {
   top: 210px;
-  left: 45px;
 }
 
 .password {
   top: 310px;
-  left: 45px;
 }
 
 .username input,
